@@ -49,7 +49,7 @@ const generateHelpEmbed = function({bot, commands}) {
 			//icon_url: 'https://i.imgur.com/wSTFkRM.png'
 		}
 	};
-}
+};
 
 const generateCommandEmbed = function ({command, bot}) {
     return {

@@ -8,7 +8,7 @@ const spotify_util = require('./spotify-overwatch.js');
 const bot = new Discord.Client({ disableMentions: 'everyone' });
 const CREDENTIALS = require('./credentials.js');
 //const serviceAccount = require('./spotify-overwatch-firebase-adminsdk-wqz65-47d0d4083e.json');  //used for firebase
-const PROGRAM_START = new Date();
+bot.PROGRAM_START = new Date();	//store program start date
 const CURRENT_VERSION = spotify_util.CURRENT_VERSION;    //current application version
 bot.login(CREDENTIALS.discord.token);
 
@@ -70,7 +70,7 @@ const generateEmbed = async function (event_obj) {
 	//change the fields of the embed depending on the type of event
 	switch (event_obj.type) {
 		case "playlistPublic":
-			embed.color = 0x3cf0a5;
+			embed.color = 0x5cf78d;
 			embed.author.name = `Playlist Made Public by ${event_obj.playlist.owner.name}`;
 			embed.title = generateTitle(event_obj.playlist.title);
 			embed.image.url = await generatePlaylistImage(event_obj.playlist.image);
@@ -265,7 +265,7 @@ bot.once('ready', async () => {
 		//child_added is really dumb in the sense that when you initially call it, it returns
 		//all the children currently at the ref
 		//bypass this by checking timestamp
-		if(!snapshot.val().timestamp || snapshot.val().timestamp < PROGRAM_START.getTime()) return;    //if no timestamp or if timestamp is in the past
+		if(!snapshot.val().timestamp || snapshot.val().timestamp < bot.PROGRAM_START.getTime()) return;    //if no timestamp or if timestamp is in the past
 		
 		//when a new event is added, it does not contain any information about which server to send it to. just the spotify user details.
 		//in this file, we need to determine which server(s) need to be notified about the event and send that notification
