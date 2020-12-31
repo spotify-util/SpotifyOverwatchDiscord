@@ -1,0 +1,20 @@
+{
+  "name": "spotify-overwatch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ollog10",
+  "license": "ISC",
+  "dependencies": {
+    "chokidar": "^3.4.2",
+    "cloudinary": "^1.23.0",
+    "discord.js": "^12.5.1",
+    "firebase-admin": "^9.4.2",
+    "luxon": "^1.25.0",
+    "set-interval-async": "1.0.33",
+    "superagent": "^6.1.0"
+  }
+}
