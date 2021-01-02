@@ -309,3 +309,31 @@ bot.on('message', async (message) => {
 		message.reply('There was an error executing that command').catch(console.error);
 	}
 });
+
+bot.on('guildCreate', (guild) => {
+	const embed = {
+		title: 'Joined Server',
+		thumbnail: {
+			url: guild.iconURL()
+		},
+		fields: [
+			{
+				name: 'Name',
+				value: guild.name,
+				inline: true
+			},
+			{
+				name: 'Members',
+				value: guild.memberCount.toString(),
+				inline: true
+			},
+			{
+				name: 'Owner',
+				value: `<@${guild.ownerID}>`,
+				inline: true
+			}
+		],
+		timestamp: new Date()
+	};
+	bot.channels.cache.find(ch => ch.id == '795009519360802918').send({ embed: embed });
+});
