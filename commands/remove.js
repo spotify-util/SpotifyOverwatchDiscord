@@ -4,7 +4,7 @@ let ow_targets;
 
 module.exports = {
 	name: 'remove',
-	description: 'Set up an overwatch on a Spotify user using their profile URL',
+	description: 'Removes an overwatch on a user by their overwatch number or Spotify profile URL',
 	args: true,
     usage: '<overwatch-number> OR <spotify-profile-url>',
     aliases: ['rm', 'delete'],

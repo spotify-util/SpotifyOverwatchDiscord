@@ -80,7 +80,7 @@ const generateCommandEmbed = function ({command, bot}) {
             },
             {
 				name: 'Usage',
-				value: `<@!${bot.user.id}> \`${command.name}${!!command.usage ? command.usage : ''}\``
+				value: `<@!${bot.user.id}> \`${command.name}${!!command.usage ? ` ${command.usage}` : ''}\``
             }
 		],
 		//image: {
