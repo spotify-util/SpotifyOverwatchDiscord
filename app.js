@@ -4,6 +4,7 @@ const cloudinary = require('cloudinary').v2;	//modify playlist images
 const fs = require('fs');
 const { join } = require('path');
 const spotify_util = require('./spotify-overwatch.js');
+const he = require('he');
 
 const bot = new Discord.Client({ disableMentions: 'everyone' });
 const CREDENTIALS = require('./credentials.js');
@@ -85,7 +86,7 @@ const generateEmbed = async function (event_obj) {
 				},
 				{
 					name: 'Description:',
-					value: event_obj.playlist.description || '[No description set]'
+					value: he.decode(event_obj.playlist.description) || '[No description set]'
 				},
 				{
 					name: '\u200b',
@@ -113,7 +114,7 @@ const generateEmbed = async function (event_obj) {
 				},
 				{
 					name: 'Description:',
-					value: event_obj.playlist.description || '[No description set]'
+					value: he.decode(event_obj.playlist.description) || '[No description set]'
 				},
 				{
 					name: '\u200b',
@@ -141,7 +142,7 @@ const generateEmbed = async function (event_obj) {
 				},
 				{
 					name: 'Description:',
-					value: event_obj.playlist.description || '[No description set]'
+					value: he.decode(event_obj.playlist.description) || '[No description set]'
 				},
 				{
 					name: '\u200b',
@@ -169,7 +170,7 @@ const generateEmbed = async function (event_obj) {
 				},
 				{
 					name: 'Description:',
-					value: event_obj.playlist.description || '[No description set]'
+					value: he.decode(event_obj.playlist.description) || '[No description set]'
 				},
 				{
 					name: '\u200b',
@@ -204,12 +205,12 @@ const generateEmbed = async function (event_obj) {
 				},
 				{
 					name: 'Old Description:',
-					value: event_obj.playlist.description.old || '[No description set]',
+					value: he.decode(event_obj.playlist.description.old) || '[No description set]',
 					inline: true
 				},
 				{
 					name: 'New Description:',
-					value: event_obj.playlist.description.new || '[No description set]',
+					value: he.decode(event_obj.playlist.description.new) || '[No description set]',
 					inline: true
 				},
 				{
