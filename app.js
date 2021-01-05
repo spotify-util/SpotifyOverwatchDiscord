@@ -248,7 +248,7 @@ const generateEmbed = async function (event_obj) {
 						value: `**Old Image:**`,
 						inline: true
 					};
-					embed.image = await generatePlaylistImage(event_obj.playlist.image.old);
+					embed.image.url = await generatePlaylistImage(event_obj.playlist.image.old);
 					break;
 			}
 	}; 
