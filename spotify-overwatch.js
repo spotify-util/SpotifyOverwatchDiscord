@@ -130,15 +130,21 @@ async function addOverwatchTarget({guild, discord_author, target}) {
 };
 
 async function remOverwatchTarget({guild, target_id}) {
-    return new Promise((resolve, reject) => {
-        if(!local_cache.overwatch_targets[guild.id][target_id]) reject();   //ensure target exists
+    return new Promise(async (resolve, reject) => {
+        if(!local_cache.overwatch_targets[guild.id][target_id]) reject();   //ensure target exists in guild cache
         delete local_cache.overwatch_targets[guild.id][target_id];          //remove it
-        fsPromises.writeFile('./cache/server-targets.json', JSON.stringify(local_cache.overwatch_targets)) //write cache locally
-            .then(resolve())
+        await fsPromises.writeFile('./cache/server-targets.json', JSON.stringify(local_cache.overwatch_targets)) //write cache locally
             .catch((err) => {
                 console.error(err);
                 reject(err);
             });
+        if(!!local_cache.user_profile_playlists[target_id])
+            delete local_cache.user_profile_playlists[target_id];           //remove target from playlist cache as well, to save storage
+        await updateCache().catch((err) => {
+            console.error(err);
+            reject(err);
+        });
+        resolve();
     });
 };
 
@@ -231,6 +237,13 @@ async function compareUserProfilePlaylists(retrieved_playlists, uid = current_us
             for(const playlist_obj of playlist_diff) {
                 //store the target playlist in its current state to be referenced later
                 const current_playlist_obj = await getSinglePlaylist(playlist_obj.id);
+
+                // TEMPORARY LOGGING
+                fs.appendFile("./log/tmp.log", `\n${new Date().getTime()} : \n\tCached User: ${JSON.stringify(local_cache.user_profile_playlists[uid])}\n\tCurrent Obj: ${JSON.stringify(current_playlist_obj)}`, (append_err) => {
+                    if(append_err) console.log(`[ERROR] in logError: ${append_err}`);
+                });
+
+
                 //if the newly discovered playlists has songs inside that were added over than 2500ms ago, then we assume the playlist went from private to public
                 if(current_playlist_obj.tracks.items.length > 0 &&
                     new Date(current_playlist_obj.tracks.items.sort((a,b) => new Date(a.added_at) - new Date(b.added_at))[0].added_at) < new Date(new Date().getTime() - 2500))
@@ -282,6 +295,12 @@ async function compareUserProfilePlaylists(retrieved_playlists, uid = current_us
             for(const playlist_obj of playlist_diff) {
                 //store the target playlist in its current state to be referenced later
                 const current_playlist_obj = await getSinglePlaylist(playlist_obj.id);
+
+                // TEMPORARY LOGGING
+                fs.appendFile("./log/tmp.log", `\n${new Date().getTime()} : \n\tCached Obj: ${JSON.stringify(playlist_obj)}\n\tCurrent Obj: ${JSON.stringify(current_playlist_obj)}`, (append_err) => {
+                    if(append_err) console.log(`[ERROR] in logError: ${append_err}`);
+                });
+
                 //if snapshot ids are different, then the playlist was deleted
                 if(playlist_obj.snapshot_id != current_playlist_obj.snapshot_id)
                     database.ref('redirect_ids').push({
@@ -302,23 +321,24 @@ async function compareUserProfilePlaylists(retrieved_playlists, uid = current_us
                         timestamp: new Date().getTime()
                     });
                 //if snapshot ids are the same, then the playlist was only made private
-                else database.ref('redirect_ids').push({
-                    uid: uid,
-                    type: "playlistPrivate",  //required
-                    playlist: {
-                        title: playlist_obj.name,
-                        description: playlist_obj.description,
-                        image: !!playlist_obj.images[0] ? playlist_obj.images[0].url : 'http://www.glassintel.com/images/default_playlist_img.jpg',
-                        owner: { 
-                            name: playlist_obj.owner.display_name,
-                            id: playlist_obj.owner.id,
-                            url: playlist_obj.owner.external_urls.spotify,
-                            image: await getUserProfileImage(playlist_obj.owner.id)    //if needed, make the profile image a global variable above
+                else if(!current_playlist_obj.public) 
+                    database.ref('redirect_ids').push({
+                        uid: uid,
+                        type: "playlistPrivate",  //required
+                        playlist: {
+                            title: playlist_obj.name,
+                            description: playlist_obj.description,
+                            image: !!playlist_obj.images[0] ? playlist_obj.images[0].url : 'http://www.glassintel.com/images/default_playlist_img.jpg',
+                            owner: { 
+                                name: playlist_obj.owner.display_name,
+                                id: playlist_obj.owner.id,
+                                url: playlist_obj.owner.external_urls.spotify,
+                                image: await getUserProfileImage(playlist_obj.owner.id)    //if needed, make the profile image a global variable above
+                            },
+                            url: playlist_obj.external_urls.spotify
                         },
-                        url: playlist_obj.external_urls.spotify
-                    },
-                    timestamp: new Date().getTime()
-                });
+                        timestamp: new Date().getTime()
+                    });
             }
             return;
         }
