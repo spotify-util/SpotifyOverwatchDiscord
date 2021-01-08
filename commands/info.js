@@ -21,7 +21,7 @@ const generateHelpEmbed = function({bot}) {
 		//	//icon_url: event_obj.playlist.owner.image,
 		//	//url: event_obj.playlist.owner.url
 		//},
-		description: 'Discord bot that watches Spotify profiles and sends messages when a playlist is added, removed, or modified (title/desc/image changed)',
+		description: '**NOT** endorsed or sponsored by Spotify USA, Inc., Spotify AB or Spotify Technologies S.A. in any way.\nThis is a Discord bot that watches Spotify profiles and sends messages when a playlist is added, removed, or modified (title/desc/image changed)',
 		thumbnail: {
 			url: bot.user.displayAvatarURL()
 		},
