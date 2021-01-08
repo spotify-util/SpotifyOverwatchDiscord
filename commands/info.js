@@ -5,7 +5,7 @@ module.exports = {
     name: 'info',
     description: 'Get information about this bot, such as support server and source code',
     args: false,
-    aliases: ['information', 'support', 'about'],
+    aliases: ['information', 'support', 'about', 'stats'],
     execute({bot, message, args}) {
        return message.channel.send({ embed:generateHelpEmbed({bot}) });
     }
@@ -21,7 +21,7 @@ const generateHelpEmbed = function({bot}) {
 		//	//icon_url: event_obj.playlist.owner.image,
 		//	//url: event_obj.playlist.owner.url
 		//},
-		description: 'Discord bot that watches Spotify profiles and sends messages upon changes',
+		description: 'Discord bot that watches Spotify profiles and sends messages when a playlist is added, removed, or modified (title/desc/image changed)',
 		thumbnail: {
 			url: bot.user.displayAvatarURL()
 		},
