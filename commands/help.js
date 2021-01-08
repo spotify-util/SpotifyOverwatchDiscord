@@ -37,7 +37,7 @@ const generateHelpEmbed = function({bot, commands}) {
 		fields: [
 			{
 				name: '\u200b',
-                value: `${commands.map(command => `[\`${command.name}\`](https://discord.gg/gnjBKhvEUC "${command.description}")`).join('\n')}\n\u200b\n`
+                value: `${commands.filter(command => !command.admin).map(command => `[\`${command.name}\`](https://discord.gg/gnjBKhvEUC "${command.description}")`).join('\n')}\n\u200b\n`
             }
 		],
 		//image: {

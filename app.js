@@ -301,7 +301,8 @@ bot.on('message', async (message) => {
 	if(!command) return;	//if the command is not an actual cmd, exit w/o message
 	if(!!command.args && !args.length) 
 		return message.channel.send(!!command.usage ? `Proper usage: <@${bot.user.id}> \`${commandName} ${command.usage}\`` : `You didn't provide any arguments, ${message.author}!`);
-	
+	if(command.admin && message.author.id != '139120967208271872')	//admin command check
+		return message.channel.send('You do not have permission to use that command');
 	
 	try {
 		command.execute({bot:bot, message:message, args:args});
