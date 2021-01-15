@@ -325,13 +325,41 @@ bot.on('guildCreate', (guild) => {
 				inline: true
 			},
 			{
+				name: 'Owner',
+				value: `<@${guild.ownerID}>`,
+				inline: true
+			},
+			{
 				name: 'Members',
 				value: guild.memberCount.toString(),
+				inline: true
+			}
+		],
+		timestamp: new Date()
+	};
+	bot.channels.cache.find(ch => ch.id == '795009519360802918').send({ embed: embed });
+});
+
+bot.on('guildDelete', (guild) => {
+	const embed = {
+		title: 'Left Server',
+		thumbnail: {
+			url: guild.iconURL()
+		},
+		fields: [
+			{
+				name: 'Name',
+				value: guild.name,
 				inline: true
 			},
 			{
 				name: 'Owner',
 				value: `<@${guild.ownerID}>`,
+				inline: true
+			},
+			{
+				name: 'Members',
+				value: guild.memberCount.toString(),
 				inline: true
 			}
 		],
