@@ -26,6 +26,24 @@ for (const file of commandFiles) {
 	bot.commands.set(command.name, command);
 }
 
+bot.updateGuildSettings = function mergeCurrentGuildSettingsWithNewGuildSettings({guild, settings} = {}) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			//import current local guild settings
+			const current_settings = JSON.parse(await fs.promises.readFile('./cache/guild-settings.json', 'utf8'));
+			//combine guild settings
+			const new_settings = {...current_settings[guild.id], ...settings};
+			//write globay guild settings settings locally
+			await fs.promises.writeFile('./cache/guild-settings.json', JSON.stringify({...current_settings, [guild.id]: new_settings}));
+			//write guild settings to database
+			await database.ref(`guild_settings/${guild.id}`).set(new_settings);
+		} catch (err) {
+			reject(err);
+		}
+		resolve();
+	});
+};
+
 const generatePlaylistImage = function(image) {
 	return new Promise((resolve, reject) => {
 		if(typeof image != 'string') resolve('http://www.glassintel.com/images/default_playlist_img.jpg');

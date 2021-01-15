@@ -38,11 +38,13 @@ module.exports = {
         if(!channel_perms.has("ADD_REACTIONS"))
             return message.channel.send('I don\'t have access to add reactions in that channel, please either give me access or try a different channel');
         
-        //import current guild settings file, add to it locally, then write to the file
-        //import performed above
-        guild_settings[message.guild.id] = { ...guild_settings[message.guild.id], ow_channel:ch_id };
         try {
-            await fsPromises.writeFile('./cache/guild-settings.json', JSON.stringify(guild_settings));
+            bot.updateGuildSettings({
+                guild:message.guild,
+                settings: {
+                    ow_channel: ch_id
+                }
+            });
         } catch (err) {
             console.error(err);
             return message.channel.send('I was unable to set that as the event channel');

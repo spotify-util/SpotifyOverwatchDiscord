@@ -10,7 +10,7 @@ const { setIntervalAsync } = require('set-interval-async/fixed');   //async setI
 const CREDENTIALS = require('./credentials').spotify;
 const serviceAccount = require('./spotify-overwatch-firebase-adminsdk-wqz65-47d0d4083e.json');  //used for firebase
 
-const CURRENT_VERSION = "1.0.0";    //current application version
+const CURRENT_VERSION = "1.0.2";    //current application version
 //cycle record: 
 
 firebase.initializeApp({
@@ -25,7 +25,7 @@ firebase.initializeApp({
 let local_cache = {};
 async function importLocalJSON() {
     try {
-        local_cache.overwatch_targets       = JSON.parse(await fsPromises.readFile('./cache/server-targets.json', 'utf8'));
+        local_cache.overwatch_targets       = JSON.parse(await fsPromises.readFile('./cache/guild-targets.json', 'utf8'));
         local_cache.user_profile_playlists  = JSON.parse(await fsPromises.readFile('./cache/user-playlist-cache.json', 'utf8'));
         local_cache.single_user_playlists   = JSON.parse(await fsPromises.readFile('./cache/single-playlist-cache.json', 'utf8'));
     } catch (err) {
@@ -44,17 +44,14 @@ function importDatabaseContent() {
     //imports the user credentials from firebase and stores them in the cache
     //this overrides whatever was previously in the cache
     return Promise.all([
-        database.ref(`users/${current_user}/targets`).once("value").then(async snapshot => {
-            await fsPromises.writeFile('./cache/server-targets.json', JSON.stringify({[current_user]:snapshot.val()}));
+        database.ref(`guild_targets`).once("value").then(async snapshot => {
+            await fsPromises.writeFile('./cache/guild-targets.json', JSON.stringify(snapshot.val()))
+                .then(() => console.log(`Imported ${Object.values(snapshot.val()).reduce((acc, cur) => acc + Object.keys(cur).length, 0)} overwatch targets from Firebase`))
             return;
         }).catch(err => err),
-        database.ref('users').once("value").then(async snapshot => {
-            let new_obj = {};
-            for(const user in snapshot.val()) {
-                new_obj[snapshot.val()[user].uid] = snapshot.val()[user].pushed_id;
-            }
-            console.log(new_obj);
-            await fsPromises.writeFile('./cache/user-pushed-ids.json', JSON.stringify(new_obj));
+        database.ref('guild_settings').once("value").then(async snapshot => {
+            await fsPromises.writeFile('./cache/guild-settings.json', JSON.stringify(snapshot.val()))
+                .then(() => console.log(`Imported ${Object.keys(snapshot.val()).length} guild settings from Firebase`));
             return;
         }).catch(err => err)
     ]);
@@ -70,7 +67,7 @@ function refreshToken() {
             refresh_token:  CREDENTIALS.refresh_token
         })
         .then(res => {
-            console.log(res.body);
+            //console.log(res.body);
             local_credentials.access_token = res.body.access_token;
             local_credentials.expires_at = new Date().getTime() + (res.body.expires_in * 1000);
             console.log('Succesfully retreived new access token');
@@ -104,7 +101,7 @@ async function updateCache() {
     try {
         await fsPromises.writeFile('./cache/single-playlist-cache.json', JSON.stringify(local_cache.single_user_playlists));
         await fsPromises.writeFile('./cache/user-playlist-cache.json', JSON.stringify(local_cache.user_profile_playlists));
-        //await fsPromises.writeFile('./cache/server-targets.json', JSON.stringify(local_cache.overwatch_targets));
+        //await fsPromises.writeFile('./cache/guild-targets.json', JSON.stringify(local_cache.overwatch_targets));
     } catch (err) {
         throw new Error(err);
     } finally {
@@ -120,12 +117,13 @@ async function addOverwatchTarget({guild, discord_author, target}) {
             added_on: new Date().getTime()
         };
         local_cache.overwatch_targets[guild.id] = {...local_cache.overwatch_targets[guild.id], [target.id]: {  ...obj }};   //add object to cache
-        fsPromises.writeFile('./cache/server-targets.json', JSON.stringify(local_cache.overwatch_targets)) //write cache locally
+        fsPromises.writeFile('./cache/guild-targets.json', JSON.stringify(local_cache.overwatch_targets)) //write cache locally
             .then(resolve())
             .catch((err) => {
                 console.error(err);
                 reject(err);
             });
+        database.ref('guild_targets').update({ [`/${guild.id}/${target.id}`]: obj });   //synchronously write to database
     });
 };
 
@@ -133,11 +131,13 @@ async function remOverwatchTarget({guild, target_id}) {
     return new Promise(async (resolve, reject) => {
         if(!local_cache.overwatch_targets[guild.id][target_id]) reject();   //ensure target exists in guild cache
         delete local_cache.overwatch_targets[guild.id][target_id];          //remove it
-        await fsPromises.writeFile('./cache/server-targets.json', JSON.stringify(local_cache.overwatch_targets)) //write cache locally
+        await fsPromises.writeFile('./cache/guild-targets.json', JSON.stringify(local_cache.overwatch_targets)) //write cache locally
             .catch((err) => {
                 console.error(err);
                 reject(err);
             });
+        //synchronously remove target from database
+        database.ref(`guild_targets/${guild.id}/${target_id}`).remove();
         if(!!local_cache.user_profile_playlists[target_id])
             delete local_cache.user_profile_playlists[target_id];           //remove target from playlist cache as well, to save storage
         await updateCache().catch((err) => {
@@ -701,7 +701,7 @@ async function singlePlaylistOverwatch(playlist_uri = "") {
         // I need to set up something that watches the database and updates the cache files upon database being updated, if I go for cloud-based
         console.log("Initializing...");
         current_user = "";
-        //await importDatabaseContent();
+        await importDatabaseContent();
         await importLocalJSON();
         await authenticateSpotify();
 
