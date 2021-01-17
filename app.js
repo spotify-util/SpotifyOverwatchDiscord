@@ -6,7 +6,7 @@ const { join } = require('path');
 const spotify_util = require('./spotify-overwatch.js');
 const he = require('he');
 
-const bot = new Discord.Client({ disableMentions: 'everyone' });
+const bot = new Discord.Client({ disableMentions: 'everyone', restTimeOffset: 0 });
 const CREDENTIALS = require('./credentials.js');
 //const serviceAccount = require('./spotify-overwatch-firebase-adminsdk-wqz65-47d0d4083e.json');  //used for firebase
 bot.PROGRAM_START = new Date();	//store program start date
