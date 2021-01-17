@@ -278,8 +278,8 @@ const generateEmbed = async function (event_obj) {
 bot.once('ready', async () => {
 	console.log("Bot online");
 	bot.user.setActivity('Spotify profiles', { type: 'WATCHING' });
-	//let msg = await spotify_util.getUserProfile('ollog10');
-	//bot.channels.cache.find(ch => ch.id == '791372963681271819').send('```json\n' +JSON.stringify(msg) +'```');
+
+	//send spotify overwatch events when the database child is updated
 	database.ref('redirect_ids').on('child_added', async (snapshot) => {
 		//child_added is really dumb in the sense that when you initially call it, it returns
 		//all the children currently at the ref
@@ -299,11 +299,19 @@ bot.once('ready', async () => {
 			for(const target_id of Object.keys(server_obj))
 				if(target_id === uid) matching_servers.push(server_id);	//if a server has an overwatch on the stored uid, add that server id to our array
 		for(const server_id of matching_servers) {
-			//import guild settings to get channel to send msg
-			const guild_settings = JSON.parse(await fs.promises.readFile('./cache/guild-settings.json', 'utf8'));
-			if(!guild_settings[server_id]) return console.log(`No guild found with id ${server_id}`);
-			if(!guild_settings[server_id].ow_channel) return console.log(`No ow_channel found for guild with id ${server_id}`);
-			bot.channels.cache.find(ch => ch.id == guild_settings[server_id].ow_channel).send({ embed: embed });
+			try {
+				//import guild settings to get channel to send msg
+				const guild_settings = JSON.parse(await fs.promises.readFile('./cache/guild-settings.json', 'utf8'));
+				if(!guild_settings[server_id]) return console.log(`No guild found with id ${server_id}`);
+				if(!guild_settings[server_id].ow_channel) return console.log(`No ow_channel found for guild with id ${server_id}`);
+				//ensure channel perms allow the sending of embeds
+				const server_ow_channel = bot.channels.resolve(guild_settings[server_id].ow_channel);
+				if(!server_ow_channel.permissionsFor(bot.user).has("EMBED_LINKS"))
+					return server_ow_channel.send("I need permission to embed links in this channel so I can send overwatch events!");
+				server_ow_channel.send({ embed: embed });
+			} catch(err) { 
+				console.log(err);
+			}
 		}
 	});
 });
@@ -321,6 +329,13 @@ bot.on('message', async (message) => {
 		return message.channel.send(!!command.usage ? `Proper usage: <@${bot.user.id}> \`${commandName} ${command.usage}\`` : `You didn't provide any arguments, ${message.author}!`);
 	if(command.admin && message.author.id != '139120967208271872')	//admin command check
 		return message.channel.send('You do not have permission to use that command');
+
+	//make sure bot has proper channel permissions
+	const channel_perms = message.channel.permissionsFor(message.guild.me);
+	if(!channel_perms.has("EMBED_LINKS"))
+            return message.channel.send('I don\'t have access to embed links in this channel, please give me access so you can use my commands');
+	if(!channel_perms.has("ADD_REACTIONS"))
+            return message.channel.send('I don\'t have access to add reactions in this channel, please give me access so you can use my commands');
 	
 	try {
 		command.execute({bot:bot, message:message, args:args});
@@ -385,3 +400,5 @@ bot.on('guildDelete', (guild) => {
 	};
 	bot.channels.cache.find(ch => ch.id == '795009519360802918').send({ embed: embed });
 });
+
+process.on('unhandledRejection', (error) => console.error('[UNHANDELED PROMISE REJECTION]:', error));
