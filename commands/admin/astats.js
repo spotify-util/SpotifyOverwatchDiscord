@@ -1,5 +1,5 @@
 const fsPromises = require('fs').promises;
-const spotify_util = require('../spotify-overwatch.js');
+const spotify_util = require('../../spotify-overwatch.js');
 
 module.exports = {
     name: 'astats',
