@@ -1,4 +1,4 @@
-const spotify_util = require('../spotify-overwatch.js');
+const spotify_util = require('../../spotify-overwatch.js');
 
 module.exports = {
     name: 'help',

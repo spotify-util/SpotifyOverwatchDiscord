@@ -1,10 +1,10 @@
 const Discord = require('discord.js');			//interact with discord
 const cloudinary = require('cloudinary').v2;	//modify playlist images
 //const firebase = require('firebase-admin');		//access Google firebase to monitor new events
-const fs = require('fs');
-const { join } = require('path');
-const spotify_util = require('./spotify-overwatch.js');
-const he = require('he');
+const fs = require('fs');						//node's native filesystem module
+const { join } = require('path');				//manipulation of file paths
+const spotify_util = require('./spotify-overwatch.js');	//custom script to make spotify api calls
+const he = require('he');						//format spotify playlist descriptions
 
 const bot = new Discord.Client({ disableMentions: 'everyone', restTimeOffset: 0 });
 const CREDENTIALS = require('./credentials.js');
@@ -13,18 +13,45 @@ bot.PROGRAM_START = new Date();	//store program start date
 const CURRENT_VERSION = spotify_util.CURRENT_VERSION;    //current application version
 bot.login(CREDENTIALS.discord.token);
 
-let database = spotify_util.database;
+let database = spotify_util.database;		//import firebase database from custom script
 
-cloudinary.config(CREDENTIALS.cloudinary);
+cloudinary.config(CREDENTIALS.cloudinary);	//initialize cloudinary api
 
-bot.commands = new Discord.Collection();
+bot.commands = new Discord.Collection();	//prepare commands for importation below
+
+//recurisve file gathering code modified from Nathan Vaughn's original method at https://inspirnathan.com/posts/19-how-to-recursively-fetch-files-in-nodejs/
+const fetchFiles = async (targetPath) => {
+	const files = await fs.promises.readdir(targetPath);
+	const fetchedFiles = [];
+  
+	for (const file of files) {
+		try {
+			const filepath = join(targetPath, file);
+			const stats = await fs.promises.lstat(filepath);
+
+			if(stats.isFile() && file.endsWith('.js'))
+		  		fetchedFiles.push(filepath);
+		
+			if(stats.isDirectory()) {
+		  		const childFiles = await fs.promises.readdir(filepath);
+		  		files.push(...childFiles.map((f) => join(file, f))); 
+			}
+	  	} catch(err) {
+			console.error(err);
+	  	}
+	} 
+	return fetchedFiles;
+};
 
 //import commands from files
-const commandFiles = fs.readdirSync(join(__dirname, "commands")).filter((file) => file.endsWith(".js"));
-for (const file of commandFiles) {
-	const command = require(join(__dirname, "commands", `${file}`));
-	bot.commands.set(command.name, command);
-}
+fetchFiles(join(__dirname, "commands")).then((filepaths) => {
+	for (const filepath of filepaths) {
+		const command = require(filepath);
+		bot.commands.set(command.name, command);
+	}
+	console.log(`Imported ${bot.commands.size} commands`);
+});
+
 
 bot.updateGuildSettings = function mergeCurrentGuildSettingsWithNewGuildSettings({guild, settings} = {}) {
 	return new Promise(async (resolve, reject) => {

@@ -1,4 +1,4 @@
-const spotify_util = require('../spotify-overwatch.js');
+const spotify_util = require('../../spotify-overwatch.js');
 const { DateTime } = require('luxon');      //for manipulation of dates
 let ow_targets;
 

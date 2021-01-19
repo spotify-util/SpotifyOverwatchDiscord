@@ -1,4 +1,4 @@
-const { CURRENT_VERSION, cache } = require('../spotify-overwatch.js');
+const { CURRENT_VERSION, cache } = require('../../spotify-overwatch.js');
 const { DateTime } = require('luxon');      //for manipulation of dates
 
 module.exports = {
