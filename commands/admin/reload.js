@@ -2,7 +2,7 @@ module.exports = {
     name: 'reload',
     group: 'admin',
     description: 'Reloads a command',
-    args: false,
+    args: true,
     usage: '<command>',
     aliases: [],
     admin: true,
