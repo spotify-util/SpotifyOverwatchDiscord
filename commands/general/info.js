@@ -3,6 +3,7 @@ const { Duration } = require('luxon');
 
 module.exports = {
     name: 'info',
+    group: 'general',
     description: 'Get information about this bot, such as support server and source code',
     args: false,
     aliases: ['information', 'support', 'about', 'stats'],

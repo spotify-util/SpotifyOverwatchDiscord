@@ -1,7 +1,8 @@
 const spotify_util = require('../../spotify-overwatch.js');
 
 module.exports = {
-    name: 'help',
+	name: 'help',
+	group: 'general',
     description: 'List the available commands or get information about a specific one',
     args: false,
     usage: '<command>',

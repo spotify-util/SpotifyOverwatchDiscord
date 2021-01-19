@@ -2,7 +2,8 @@ const { CURRENT_VERSION, cache } = require('../../spotify-overwatch.js');
 const { DateTime } = require('luxon');      //for manipulation of dates
 
 module.exports = {
-    name: 'list',
+	name: 'list',
+	group: 'spotify',
 	description: 'View the list of overwatches set up for this server',
 	args: false,
     usage: '',

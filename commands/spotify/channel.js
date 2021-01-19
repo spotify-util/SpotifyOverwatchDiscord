@@ -2,6 +2,7 @@ const fsPromises = require('fs').promises;
 
 module.exports = {
     name: 'channel',
+    group: 'spotify',
 	description: 'Change or set the channel where Overwatch events are logged',
 	args: false,
     usage: '<channel-name>',

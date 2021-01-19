@@ -4,6 +4,7 @@ let ow_targets;
 
 module.exports = {
 	name: 'remove',
+	group: 'spotify',
 	description: 'Removes an overwatch on a user by their overwatch number or Spotify profile URL',
 	args: true,
     usage: '<overwatch-number> OR <spotify-profile-url>',

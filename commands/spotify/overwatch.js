@@ -3,6 +3,7 @@ const fsPromises = require('fs').promises;
 
 module.exports = {
 	name: 'overwatch',
+	group: 'spotify',
 	description: 'Set up an overwatch on a Spotify user using their profile URL',
 	args: true,
     usage: '<spotify-profile-url>',
