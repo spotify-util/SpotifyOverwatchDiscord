@@ -11,7 +11,19 @@ const CREDENTIALS = require('./credentials.js');
 //const serviceAccount = require('./spotify-overwatch-firebase-adminsdk-wqz65-47d0d4083e.json');  //used for firebase
 bot.PROGRAM_START = new Date();	//store program start date
 const CURRENT_VERSION = spotify_util.CURRENT_VERSION;    //current application version
-bot.login(CREDENTIALS.discord.token);
+
+const discordLogin = function recursivelyLoginToDiscord() {
+	return new Promise((resolve, reject) => {
+		bot.login(CREDENTIALS.discord.token)
+			.then(() => resolve())
+			.catch((err) => {
+				console.log("Error logging in to Discord, retrying in 5 seconds...");
+				return new Promise((resolve, reject) => setTimeout(() => resolve(discordLogin()), 5000))
+					.then(res => res).catch(err => err);	//these may not be necessary
+			});
+	});
+};
+const discordLoginHandler = (async () => await discordLogin())();
 
 let database = spotify_util.database;		//import firebase database from custom script
 
