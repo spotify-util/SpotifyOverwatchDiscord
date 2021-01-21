@@ -37,6 +37,15 @@ const generateEmbed = async function generateAdminStatsEmbed({bot}) {
     
     //get all playlists currently being watched... sum up all playlists for each user (reference local cache to save time, info should still be the same)
     const num_playlists = Object.values(spotify_util.cache.user_profile_playlists).flat().length;
+    
+    //get the file information, process it below
+    const cache_stat = await fsPromises.stat('./cache/user-playlist-cache.json');
+
+    //byte converter method taken from https://stackoverflow.com/a/20732091 (I didn't feel like installing another npm module)
+    const byteConverter = function humanFileSize(size) {
+        const i = size == 0 ? 0 : Math.floor( Math.log(size) / Math.log(1024) );
+        return ( size / Math.pow(1024, i) ).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
+    };
 
     return {
 		color: 0x1DD05D,
@@ -65,6 +74,11 @@ const generateEmbed = async function generateAdminStatsEmbed({bot}) {
             {
                 name: 'Memory Usage',
                 value: `${memInfo.used}MB / ${memInfo.total}MB (${memInfo.percentUsed}%)`,
+                inline: false
+            },
+            {
+                name: 'Cache Size',
+                value: byteConverter(cache_stat.size),
                 inline: false
             }
 		],
