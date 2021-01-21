@@ -7,8 +7,8 @@ module.exports = {
     aliases: [],
     admin: true,
     execute({bot, message, args}) {
-        const type = args[0].trim().toUpperCase();
-        const text = args[1].trim();
+        const type = args.shift().trim().toUpperCase();
+        const text = args.join(' ').trim();
         try {
             bot.user.setActivity(text, {type:type});
         } catch(err) {
