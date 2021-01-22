@@ -22,31 +22,32 @@ module.exports = {
 }
 
 const generateHelpEmbed = function({bot, commands}) {
+	//get each category from all the commands and put them into an array where each category appears only once. remove all instances of the admin category
+	const embed_fields = Array.from(new Set(commands.map((cmd) => cmd.group).filter((group_name) => group_name != 'admin')));
     return {
 		color: 0x1DD05D,
-		title: 'Commands',
+		title: 'Bot Commands',
 		//url: user.external_urls.spotify,
 		//author: {
 		//	name: 'Confirm Overwatch on User'
 		//	//icon_url: event_obj.playlist.owner.image,
 		//	//url: event_obj.playlist.owner.url
 		//},
-		description: `Type <@!${bot.user.id}> \`help <command>\` for more info`,
+		description: `Looking to get started with the bot? View the setup tutorial [here](https://github.com/spotify-util/SpotifyOverwatchDiscord)\nType <@!${bot.user.id}> \`help <command>\` for more info on that command`,
 		//thumbnail: {
 		//	url: await spotify_util.getUserProfileImage(user.id)
 		//},
-		fields: [
-			{
-				name: '\u200b',
-                value: `${commands.filter(command => !command.admin).map(command => `[\`${command.name}\`](https://discord.gg/gnjBKhvEUC "${command.description}")`).join('\n')}\n\u200b\n`
-            }
-		],
+		fields: embed_fields.map((group_name) => ({
+			name: group_name,
+			value: `${commands.filter((command) => command.group == group_name).map(command => `[\`${command.name}\`](https://discord.gg/gnjBKhvEUC "${command.description}")`).join('\n')}\n\u200b\n`,
+			inline: true
+		})),
 		//image: {
 		//	url: await getUserProfileImage(user.id)
 		//},
 		timestamp: new Date(),
 		footer: {
-			text: `SpotifyOverwatch v${spotify_util.CURRENT_VERSION}`
+			text: `Hover over a command for more info  •  SpotifyOverwatch v${spotify_util.CURRENT_VERSION}`
 			//icon_url: 'https://i.imgur.com/wSTFkRM.png'
 		}
 	};
