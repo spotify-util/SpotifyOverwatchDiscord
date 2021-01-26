@@ -10,8 +10,8 @@ module.exports = {
     aliases: [],
 	execute({bot, message, args}) {
         const server_ows = cache.overwatch_targets[message.guild.id];
-        if(!server_ows) return message.channel.send('There have been no overwatches set up for this server');
-        if(Object.keys(server_ows).length == 0) return message.channel.send('There have been no overwatches set up for this server');
+        if(!server_ows) return message.channel.send(`There have been no overwatches set up for this server. Create one with <@!${bot.user.id}> \`overwatch\``);
+        if(Object.keys(server_ows).length == 0) return message.channel.send(`There have been no overwatches set up for this server. Create one with <@!${bot.user.id}> \`overwatch\``);
         message.channel.send({ embed: generateListEmbed({server_ows:Object.values(server_ows) })});     //generate and send embed
         return;
     }
