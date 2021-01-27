@@ -694,9 +694,11 @@ async function singlePlaylistOverwatch(playlist_uri = "") {
     }
 };
 
+let cycle_counter = 0;
+const incrementCycleCounter = () => ++cycle_counter;
 (async function main() {
     console.log(`Running Spotify Overwatch version ${CURRENT_VERSION}`);
-    let counter = 0;
+    cycle_counter = 0;
     try {
         // I need to set up something that watches the database and updates the cache files upon database being updated, if I go for cloud-based
         console.log("Initializing...");
@@ -718,7 +720,7 @@ async function singlePlaylistOverwatch(playlist_uri = "") {
         //watch the current user and send notification on playlist add/deletion
         let playlist_overwatch = setIntervalAsync(async function(){
             try {
-                console.log(`Starting Overwatch cycle ${++counter}`);
+                console.log(`Starting Overwatch cycle ${incrementCycleCounter()}`);
                 await authenticateSpotify();
                 
                 //import cache and update user list
@@ -739,10 +741,10 @@ async function singlePlaylistOverwatch(playlist_uri = "") {
                 //        await singlePlaylistOverwatch(target_playlist);
             } catch(err) {
                 logError(err);
-                console.log(`Overwatch error in cycle ${counter}: ${err}`);
+                console.log(`Overwatch error in cycle ${cycle_counter}: ${err}`);
             } finally {
                 await updateCache();
-                console.log(`Finished Overwatch cycle ${counter}`);
+                console.log(`Finished Overwatch cycle ${cycle_counter}`);
             }
         }, 2000);
     } catch(err) {
@@ -756,7 +758,8 @@ async function singlePlaylistOverwatch(playlist_uri = "") {
 module.exports = {
     CURRENT_VERSION,
     database,
-    cache:local_cache,
+    cache: local_cache,
+    getCurrentOverwatchCycle: () => cycle_counter,
     getUserProfile,
     getUserProfileImage,
     getPlaylistsOfCurrentUser,

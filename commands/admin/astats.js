@@ -72,6 +72,11 @@ const generateEmbed = async function generateAdminStatsEmbed({bot}) {
                 inline: false
             },
             {
+                name: 'Current Overwatch Cycle',
+                value: spotify_util.getCurrentOverwatchCycle(),
+                inline: false
+            },
+            {
                 name: 'Memory Usage',
                 value: `${memInfo.used}MB / ${memInfo.total}MB (${memInfo.percentUsed}%)`,
                 inline: false
