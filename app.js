@@ -364,7 +364,7 @@ bot.on('message', async (message) => {
 
 	const command = bot.commands.get(commandName) || bot.commands.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName));
 	if(!command) return;	//if the command is not an actual cmd, exit w/o message
-	if(!!command.args && !args.length) 
+	if(command.args && !args.length) 
 		return message.channel.send(!!command.usage ? `Proper usage: <@${bot.user.id}> \`${commandName} ${command.usage}\`` : `You didn't provide any arguments, ${message.author}!`);
 	if(command.admin && message.author.id != '139120967208271872')	//admin command check
 		return message.channel.send('You do not have permission to use that command');
@@ -382,10 +382,36 @@ bot.on('message', async (message) => {
 		console.error(err);
 		message.reply('There was an error executing that command').catch(console.error);
 	}
+
+	//temporary command logging
+	bot.channels.cache.find(ch => ch.id == '802180131216293948').send({
+		embed: {
+			title:'Command executed',
+			fields:[
+				{
+					name: 'Author',
+					value: `${message.author.tag} | ${message.author.toString()}`,
+					inline: true
+				},
+				{
+					name: 'Server',
+					value: `${message.guild.name}`,
+					inline: true
+				},
+				{
+					name: 'Command',
+					value: `${commandName} ${args.join(' ')}`,
+					inline: false
+				}
+			],
+			timestamp: new Date()
+	}});
 });
 
-bot.on('guildCreate', (guild) => {
+bot.on('guildCreate', async (guild) => {
+	const owner = await guild.members.fetch(guild.ownerID);
 	const embed = {
+		color: 0x1DD05D,
 		title: 'Joined Server',
 		thumbnail: {
 			url: guild.iconURL()
@@ -398,7 +424,7 @@ bot.on('guildCreate', (guild) => {
 			},
 			{
 				name: 'Owner',
-				value: `<@${guild.ownerID}>`,
+				value: `${owner.user.tag} | <@${guild.ownerID}>`,
 				inline: true
 			},
 			{
@@ -412,8 +438,11 @@ bot.on('guildCreate', (guild) => {
 	bot.channels.cache.find(ch => ch.id == '795009519360802918').send({ embed: embed });
 });
 
-bot.on('guildDelete', (guild) => {
+bot.on('guildDelete', async (guild) => {
+	//gotta use fetch() since the guild is no longer available
+	const owner = await bot.users.fetch(guild.ownerID);
 	const embed = {
+		color: 0xFF413B,
 		title: 'Left Server',
 		thumbnail: {
 			url: guild.iconURL()
@@ -426,7 +455,7 @@ bot.on('guildDelete', (guild) => {
 			},
 			{
 				name: 'Owner',
-				value: `<@${guild.ownerID}>`,
+				value: `${owner.tag} | <@${guild.ownerID}>`,
 				inline: true
 			},
 			{
@@ -440,4 +469,9 @@ bot.on('guildDelete', (guild) => {
 	bot.channels.cache.find(ch => ch.id == '795009519360802918').send({ embed: embed });
 });
 
-process.on('unhandledRejection', (error) => console.error('[UNHANDELED PROMISE REJECTION]:', error));
+process.on('unhandledRejection', (error) => {
+	console.error('[UNHANDELED PROMISE REJECTION]:', error)
+	fs.appendFile("./log/errors.log", `\n${new Date().getTime()} | app.js : ${error}`, (append_err) => {
+        if(append_err) console.log(`[ERROR] in logError: ${append_err}`);
+    });
+});
