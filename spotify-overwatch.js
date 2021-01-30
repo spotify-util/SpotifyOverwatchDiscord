@@ -10,7 +10,7 @@ const { setIntervalAsync } = require('set-interval-async/fixed');   //async setI
 const CREDENTIALS = require('./credentials').spotify;
 const serviceAccount = require('./spotify-overwatch-firebase-adminsdk-wqz65-47d0d4083e.json');  //used for firebase
 
-const CURRENT_VERSION = "1.0.3";    //current application version
+const CURRENT_VERSION = "1.0.4";    //current application version
 //cycle record: 
 
 firebase.initializeApp({
