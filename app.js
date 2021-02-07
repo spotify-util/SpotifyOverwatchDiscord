@@ -369,6 +369,8 @@ bot.on('message', async (message) => {
 	if(command.admin && message.author.id != '139120967208271872')	//admin command check
 		return message.channel.send('You do not have permission to use that command');
 
+	//TODO: guild.available implementation
+
 	//make sure bot has proper channel permissions
 	const channel_perms = message.channel.permissionsFor(message.guild.me);
 	if(!channel_perms.has("EMBED_LINKS"))
@@ -439,6 +441,8 @@ bot.on('guildCreate', async (guild) => {
 });
 
 bot.on('guildDelete', async (guild) => {
+	//remove the server's settings from the cache (to save space and prevent unnecessary api calls)
+	/*await*/ spotify_util.remGuildFromCache(guild.id);
 	//gotta use fetch() since the guild is no longer available
 	const owner = await bot.users.fetch(guild.ownerID);
 	const embed = {

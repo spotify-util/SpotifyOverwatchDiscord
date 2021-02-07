@@ -97,7 +97,7 @@ function logError(err) {
 
 async function updateCache() {
     //takes whatever is in local_cache and saves it to the appropriate ./cache/ files
-    console.log("Updating all cache files...");
+    console.log("Updating all local cache files...");
     try {
         await fsPromises.writeFile('./cache/single-playlist-cache.json', JSON.stringify(local_cache.single_user_playlists));
         await fsPromises.writeFile('./cache/user-playlist-cache.json', JSON.stringify(local_cache.user_profile_playlists));
@@ -105,7 +105,7 @@ async function updateCache() {
     } catch (err) {
         throw new Error(err);
     } finally {
-        console.log("Cache files finished updating!");
+        console.log("Local cache files finished updating!");
     }
 };
 
@@ -144,6 +144,45 @@ async function remOverwatchTarget({guild, target_id}) {
             console.error(err);
             reject(err);
         });
+        resolve();
+    });
+};
+
+//completely remove a guild from the local cache and cloud, including all its overwatch targets
+async function remGuildFromCache(guild_id) {
+    return new Promise(async (resolve, reject) => {
+        if(!local_cache.overwatch_targets[guild_id]) reject();  //ensure guild exists in local storage
+
+        //remove all cached playlists from every overwatched user in the guild. you may ask- what if there is a user that was being watched
+        //in another server as well? won't removing the cache for that user cause a flood of discord events or console errors?
+        //no, it won't- because the method that inspects user profiles on an interval was designed to not send events or throw errors if
+        //it's inspecting a profile that has no cache. see the profilePlaylistOverwatch() method for more details
+        for(const spotify_uid of Object.keys(local_cache.overwatch_targets[guild_id])) {
+            console.log(spotify_uid);
+            console.log(!!local_cache.user_profile_playlists[spotify_uid]);
+            !!local_cache.user_profile_playlists[spotify_uid] && delete local_cache.user_profile_playlists[spotify_uid];
+        }
+        console.log(Object.keys(local_cache.user_profile_playlists));
+        await updateCache().catch((err) => {
+            console.error(err);
+            reject(err);
+        });
+
+        delete local_cache.overwatch_targets[guild_id]; //remove the guild from our list of ow targets per guild
+
+        //TODO: remove the guild settings from guild-settings.json ??
+
+        //remove the guild info from firebase
+        database.ref(`guild_targets/${guild_id}`).remove();
+        //database.ref(`guild_settings/${guild_id}`).remove();
+        
+        //write cache locally
+        await fsPromises.writeFile('./cache/guild-targets.json', JSON.stringify(local_cache.overwatch_targets))
+            .catch((err) => {
+                console.error(err);
+                reject(err);
+            });
+        console.log(Object.keys(local_cache.user_profile_playlists));
         resolve();
     });
 };
@@ -617,6 +656,7 @@ async function profilePlaylistOverwatch(uid = current_user) {
         let new_playlists = await getPlaylistsOfCurrentUser(uid);
 
         //if there are no playlists in the cache, set the cache now so it can reffered to next iteration
+        //this means that if a user was just added and has no cached data, there will not be a flooding of event messages
         if(!local_cache.user_profile_playlists[uid]) //return await updateCache({obj:{...local_cache.user_profile_playlists, [uid]:new_playlists}, file:"user-playlist-cache.json"});
             return local_cache.user_profile_playlists[uid] = new_playlists;
         //we return to prevent unnecessary processing
@@ -764,5 +804,6 @@ module.exports = {
     getUserProfileImage,
     getPlaylistsOfCurrentUser,
     addOverwatchTarget,
-    remOverwatchTarget
+    remOverwatchTarget,
+    remGuildFromCache
 };
