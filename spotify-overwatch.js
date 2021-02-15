@@ -151,7 +151,7 @@ async function remOverwatchTarget({guild, target_id}) {
 //completely remove a guild from the local cache and cloud, including all its overwatch targets
 async function remGuildFromCache(guild_id) {
     return new Promise(async (resolve, reject) => {
-        if(!local_cache.overwatch_targets[guild_id]) reject();  //ensure guild exists in local storage
+        if(!local_cache.overwatch_targets[guild_id]) return;  //ensure guild exists in local storage
 
         //remove all cached playlists from every overwatched user in the guild. you may ask- what if there is a user that was being watched
         //in another server as well? won't removing the cache for that user cause a flood of discord events or console errors?
