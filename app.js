@@ -386,6 +386,7 @@ bot.on('message', async (message) => {
 	}
 
 	//temporary command logging
+	if(message.author.id == '139120967208271872') return;	//ignore myself
 	bot.channels.cache.find(ch => ch.id == '802180131216293948').send({
 		embed: {
 			title:'Command executed',
