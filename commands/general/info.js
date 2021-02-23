@@ -54,7 +54,7 @@ const generateHelpEmbed = function({bot}) {
             },
             {
                 name: 'Bot Invite',
-                value: '[Click here](https://discord.com/api/oauth2/authorize?client_id=788528928863158313&permissions=0&scope=bot "God bless")',
+                value: '[Click here](https://discord.com/api/oauth2/authorize?client_id=788528928863158313&permissions=0&scope=bot "Romans 12:2")',
                 inline: true
             },
             {
