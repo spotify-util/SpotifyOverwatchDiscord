@@ -1,6 +1,12 @@
-
+# node modules
 node_modules/
+
+# locally stored cache files
 cache/
+
+# locally stored log files
 log/
+
+# credential files
 credentials.js
 spotify-overwatch-firebase-adminsdk-wqz65-47d0d4083e.json
