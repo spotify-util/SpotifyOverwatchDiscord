@@ -283,9 +283,9 @@ async function compareUserProfilePlaylists(retrieved_playlists, uid = current_us
                 });
 
 
-                //if the newly discovered playlists has songs inside that were added over than 2500ms ago, then we assume the playlist went from private to public
+                //if the newly discovered playlists has songs inside that were added over than 4000ms ago, then we assume the playlist went from private to public
                 if(current_playlist_obj.tracks.items.length > 0 &&
-                    new Date(current_playlist_obj.tracks.items.sort((a,b) => new Date(a.added_at) - new Date(b.added_at))[0].added_at) < new Date(new Date().getTime() - 2500))
+                    new Date(current_playlist_obj.tracks.items.sort((a,b) => new Date(a.added_at) - new Date(b.added_at))[0].added_at) < new Date(new Date().getTime() - 4000))
                 //send private to public notif
                     database.ref('redirect_ids').push({
                         uid: uid,
@@ -304,7 +304,7 @@ async function compareUserProfilePlaylists(retrieved_playlists, uid = current_us
                         },
                         timestamp: new Date().getTime()
                     });
-                else    //playlist has no songs or has songs that were added within 2500ms of this being checked (deduction is playlist was just created)
+                else    //playlist has no songs or has songs that were added within 4000ms of this being checked (deduction is playlist was just created)
                     database.ref('redirect_ids').push({
                         uid: uid,
                         type: "playlistAdd",  //required
