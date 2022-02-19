@@ -19,9 +19,17 @@ module.exports = {
 
 ///generate a confirmation embed for a given Spotify user object
 const generateListEmbed = function({server_ows}) {
-    let fieldsarr = [], counter = 1;
-    for(const ow of server_ows)
-        fieldsarr.push(`${counter++}. [**${ow.spotify_target.display_name}**](${ow.spotify_target.external_urls.spotify} "ID: ${ow.spotify_target.id}") - added by <@!${ow.added_by.id}> on ${DateTime.fromMillis(ow.added_on).toFormat('yyyy-LL-dd')}`);
+    let fieldsarr = [[]], counter = 1, charcounter = 0;
+    for(const ow of server_ows) {
+		const str = `${counter++}. [**${ow.spotify_target.display_name}**](${ow.spotify_target.external_urls.spotify} "ID: ${ow.spotify_target.id}") - added by <@!${ow.added_by.id}> on ${DateTime.fromMillis(ow.added_on).toFormat('yyyy-LL-dd')}`;
+		charcounter += str.length;
+		if(charcounter > 1024) {
+			fieldsarr.push([str]);
+			charcounter = str.length;	//reset charcounter
+		}
+		else
+        	fieldsarr[fieldsarr.length - 1].push(str);
+	}
         
 	return {
 		//color: 0xffd12b,
@@ -36,12 +44,10 @@ const generateListEmbed = function({server_ows}) {
 		//thumbnail: {
 		//	url: await spotify_util.getUserProfileImage(user.id)
 		//},
-		fields: [
-            {
-                name: '\u200b',
-                value: fieldsarr.join('\n')
-            }
-        ],
+		fields: fieldsarr.map(arr => ({
+			name: '\u200b',
+			value: arr.join('\n')
+		})),
 		//image: {
 		//	url: await getUserProfileImage(user.id)
 		//},
